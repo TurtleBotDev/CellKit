@@ -6,6 +6,13 @@ A compact Windows terminal UI library with real mouse input, clickable buttons,
 editable fields, scrolling tables, dialogs, colours and timed effects. **Only
 Python's standard library** is used: no pip installs or third-party packages.
 
+CellKit began as a small, AI-agent-assisted engineering project to build a TUI
+without depending on third-party UI frameworks or package maintainers. The aim is
+to keep the code understandable, easy to inspect, and simple to copy into projects
+where external dependencies are restricted. It relies on Python and Windows'
+built-in facilities, with the source kept in your own project so you can maintain
+and extend it yourself.
+
 ![Operations dashboard](docs/screenshots/dashboard.png)
 
 *Images are rendered from the demos' actual character grids with sample data.
