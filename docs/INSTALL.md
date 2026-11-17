@@ -1,7 +1,9 @@
 # Copy CellKit into your project
 
 CellKit has no pip dependencies and does not need to be installed globally.
-Use Windows with Python 3.10 or newer.
+Use Windows with Python 3.11 or newer, on the latest patch release of a
+[supported Python version](https://devguide.python.org/versions/).
+Python 3.10 is end-of-life and no longer recommended.
 
 ## 1. Copy this folder
 

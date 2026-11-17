@@ -60,6 +60,42 @@ class InteractionTests(unittest.TestCase):
             self.mouse("up")
         self.assertEqual(self.calls, [])
 
+    def test_unavailable_widgets_stop_receiving_drag_events(self):
+        for change in ("disabled", "hidden", "removed"):
+            with self.subTest(change=change):
+                self.setUp()
+                received = []
+                self.button.mouse = lambda event: received.append(event.kind)
+                self.mouse("down")
+                if change == "disabled":
+                    self.button.enabled = False
+                elif change == "hidden":
+                    self.button.visible = False
+                else:
+                    self.app.widgets.remove(self.button)
+                self.mouse("move")
+                self.mouse("up")
+                self.assertEqual(received, ["down"])
+                self.assertIsNone(self.app.capture)
+                self.assertFalse(self.button.pressed)
+                self.assertEqual(self.calls, [])
+
+    def test_release_callback_can_cancel_activation(self):
+        for change in ("hidden", "dialog"):
+            with self.subTest(change=change):
+                self.setUp()
+                def released(event):
+                    if event.kind == "up":
+                        if change == "hidden":
+                            self.button.visible = False
+                        else:
+                            self.app.show_dialog("Notice", "Input is now modal")
+                self.button.mouse = released
+                self.mouse("down")
+                self.mouse("up")
+                self.assertEqual(self.calls, [])
+                self.assertEqual(self.app.mouse_clicks, 0)
+
     def test_hit_test_edges_are_exclusive(self):
         self.assertTrue(self.button.contains(2, 3))
         self.assertTrue(self.button.contains(11, 5))
@@ -130,6 +166,21 @@ class RenderingTests(unittest.TestCase):
         canvas = Canvas(15, 1)
         canvas.text(0, 0, "\x1b[31m")
         self.assertNotIn("\x1b[31m", canvas.changes())
+
+    def test_styles_cannot_inject_terminal_commands(self):
+        for style in ("31m\x1b[2J", "31mhidden", "\x1b]0;title\x07", "\u0661", 31):
+            for method in ("text", "highlight"):
+                with self.subTest(style=style, method=method):
+                    canvas = Canvas(3, 1)
+                    if method == "text":
+                        canvas.text(0, 0, "abc", style)
+                    else:
+                        canvas.highlight(0, 0, 3, 1, style)
+                    with self.assertRaises(ValueError):
+                        canvas.changes()
+        canvas = Canvas(1, 1)
+        canvas.text(0, 0, "x", "1;38;2;255;0;0")
+        self.assertIn("\x1b[0;1;38;2;255;0;0mx", canvas.changes())
 
     def test_dashboard_layout_fits_at_supported_sizes(self):
         dashboard = Dashboard()

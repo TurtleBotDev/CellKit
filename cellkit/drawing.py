@@ -1,5 +1,6 @@
 """Character-cell drawing. Coordinates start at (0, 0), in the top left."""
 
+import re
 import unicodedata
 
 
@@ -82,6 +83,8 @@ class Canvas:
             last_style = None
             for char, style in row:
                 if style != last_style:
+                    if not isinstance(style, str) or re.fullmatch(r"[0-9;]*", style) is None:
+                        raise ValueError("Styles must contain only ASCII digits and semicolons")
                     output.append(f"\x1b[0;{style}m")
                     last_style = style
                 output.append(char)

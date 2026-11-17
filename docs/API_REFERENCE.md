@@ -204,8 +204,10 @@ Horizontal wheel events are currently ignored.
 
 Drawing clips to the canvas. Text is converted to strings. Unsupported wide
 characters, combining marks and controls become `?`; embedded ANSI escapes in
-text are not executed. Styles themselves are trusted application-defined numeric
-ANSI parameters, such as `"1;38;2;91;224;197;48;2;16;22;34"`.
+text are not executed. Styles are numeric ANSI parameters, such as
+`"1;38;2;91;224;197;48;2;16;22;34"`. When encoding output, styles containing anything
+except ASCII digits and semicolons raise `ValueError`; embedded terminal commands
+are rejected. An empty style resets formatting.
 
 ### `Theme`
 

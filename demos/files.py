@@ -33,6 +33,14 @@ def human_size(size):
         size /= 1024
 
 
+def format_timestamp(value, pattern="%d %b %Y"):
+    """Some valid filesystem dates are outside the host's conversion range."""
+    try:
+        return datetime.fromtimestamp(value).strftime(pattern)
+    except (OSError, OverflowError, ValueError):
+        return "Unknown"
+
+
 class FileBrowser:
     def __init__(self, folder=None):
         self.app = App(min_width=79, min_height=31)
@@ -118,7 +126,7 @@ class FileBrowser:
         self.table.set_rows([
             (entry.path.name, "Folder" if entry.folder else "File",
              "--" if entry.folder else human_size(entry.size),
-             datetime.fromtimestamp(entry.modified).strftime("%d %b %Y"))
+             format_timestamp(entry.modified))
             for entry in self.shown
         ])
         self.status.text = f"{len(self.shown)} shown / {len(self.entries)} loaded  |  Read-only"
@@ -173,7 +181,7 @@ class FileBrowser:
         message = (f"{entry.path}\n\n"
                    f"Type: {'Folder' if entry.folder else 'File'}\n"
                    f"Size: {'--' if entry.folder else human_size(info.st_size)}\n"
-                   f"Modified: {datetime.fromtimestamp(info.st_mtime):%Y-%m-%d %H:%M:%S}")
+                   f"Modified: {format_timestamp(info.st_mtime, '%Y-%m-%d %H:%M:%S')}")
         buttons = ("Close", "Preview") if stat.S_ISREG(info.st_mode) else ("Close",)
         self.app.show_dialog("File details", message, buttons=buttons,
                              on_result=lambda result: self.preview(entry.path) if result == "Preview" else None)

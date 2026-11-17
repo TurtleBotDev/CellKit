@@ -1,8 +1,10 @@
 from pathlib import Path
+import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from demos.files import FileBrowser
+from demos.files import FileBrowser, format_timestamp
 
 
 class FileBrowserTests(unittest.TestCase):
@@ -31,6 +33,30 @@ class FileBrowserTests(unittest.TestCase):
         self.assertEqual(browser.shown, previous)
         self.assertEqual(browser.directory, self.root)
         self.assertIsNotNone(browser.app.dialog)
+
+    def test_unconvertible_timestamps_have_a_fallback(self):
+        for error in (OSError, OverflowError, ValueError):
+            with self.subTest(error=error):
+                with patch("demos.files.datetime") as conversion:
+                    conversion.fromtimestamp.side_effect = error("unsupported timestamp")
+                    self.assertEqual(format_timestamp(-1), "Unknown")
+                    self.browser.refresh()
+                    self.assertTrue(all(row[3] == "Unknown" for row in self.browser.table.rows))
+                    self.browser.details()
+                    self.assertIn("Modified: Unknown", self.browser.app.dialog.message)
+                    self.browser.app.close_dialog()
+
+    def test_pre_epoch_file_does_not_break_listing_or_details(self):
+        path = self.root / "old.txt"
+        path.write_text("Old file", encoding="utf-8")
+        os.utime(path, (-1, -1))
+        self.browser.refresh()
+        self.browser.filter.value = "old.txt"
+        self.browser.tick(0)
+        self.assertEqual(len(self.browser.shown), 1)
+        self.browser.details()
+        self.assertIn("Modified:", self.browser.app.dialog.message)
+        self.browser.app.render()
 
     def test_filter_details_preview_and_escape_have_no_file_writes(self):
         browser = self.browser

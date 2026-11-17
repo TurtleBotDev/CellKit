@@ -135,6 +135,18 @@ def main():
         raise AssertionError("Callback exception was swallowed")
     assert (mode(input_handle), mode(output_handle)) == before
     assert not broken.running
+
+    # Supplementary characters must not truncate the following text or ANSI reset.
+    terminal = Terminal()
+    with terminal:
+        terminal.write("\x1b[1;1HA\U0001d400Z\x1b[0mQ")
+        # Legacy conhost may substitute the glyph. Verify the trailing ASCII and
+        # complete escape sequence independently of font/supplementary support.
+        buffer = ct.create_unicode_buffer(3)
+        read = wt.DWORD()
+        terminal.check(api.ReadConsoleOutputCharacterW(output_handle, buffer, 2,
+                                                       Coord(2, 0), ct.byref(read)))
+        assert read.value == 2 and buffer.value == "ZQ", ascii(buffer.value)
     print("NATIVE CONSOLE PASS: input, callback, editing, output, normal and exception cleanup")
 
 

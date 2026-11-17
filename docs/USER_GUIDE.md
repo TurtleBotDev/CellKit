@@ -29,7 +29,8 @@ lists the constructors, methods, callback arguments, and defaults.
 
 ### Requirements
 
-Use Windows and Python 3.10 or newer in an interactive terminal. Windows Terminal,
+Use Windows and a supported Python 3.11 or newer on its latest patch release,
+in an interactive terminal. Windows Terminal,
 the Windows console, and Windows-based VS Code integrated terminals are the
 intended hosts. Mouse forwarding and colours depend on the terminal host, so test
 the terminal you actually use at work.

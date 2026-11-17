@@ -168,10 +168,20 @@ class Terminal:
         return max(1, window.right - window.left), max(1, window.bottom - window.top + 1)
 
     def write(self, text):
-        # WriteConsoleW renders Unicode without changing the user's code page.
+        # Win32 counts UTF-16 units, not Python code points. Keep the buffer alive
+        # across partial writes, advancing by units even within a surrogate pair.
         if text:
-            written = wt.DWORD()
-            self.check(self.api.WriteConsoleW(self.output, text, len(text), ct.byref(written), None))
+            data = text.encode("utf-16-le")
+            buffer = ct.create_string_buffer(data)
+            total, offset = len(data) // 2, 0
+            while offset < total:
+                written = wt.DWORD()
+                pointer = ct.cast(ct.byref(buffer, offset * 2), wt.LPCWSTR)
+                self.check(self.api.WriteConsoleW(self.output, pointer, total - offset,
+                                                 ct.byref(written), None))
+                if not 0 < written.value <= total - offset:
+                    raise OSError("WriteConsoleW returned an invalid write count")
+                offset += written.value
 
     def read(self, timeout_ms=30):
         result = self.api.WaitForSingleObject(self.input, timeout_ms)

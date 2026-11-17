@@ -26,7 +26,9 @@ They are labelled previews, not captures of a live terminal window. See the
 - **[API reference: methods, defaults and callbacks](docs/API_REFERENCE.md)**
 - **[Screenshots and recording instructions](docs/SCREENSHOTS.md)**
 
-Requires **Windows and Python 3.10+** in an interactive terminal. Intended hosts
+Requires **Windows and Python 3.11+** in an interactive terminal. Use the latest
+patch release of a supported Python version; Python 3.10 is end-of-life.
+See [Python's support table](https://devguide.python.org/versions/). Intended hosts
 include Windows Terminal, the Windows console and Windows VS Code integrated
 terminals. Check mouse forwarding in your actual work terminal. ISE, Output panes,
 redirected stdin/stdout, WSL Python, Linux and macOS are not supported.
@@ -124,8 +126,8 @@ button.flash(duration=2, style="1;38;2;255;255;255;48;2;180;35;45")
 
 ## Size and limits
 
-The core is **903 lines across eight Python files**, including comments and blank
-lines, excluding demos, examples, tests, docs and tooling. It stays small through
+The core is **about 920 lines across eight Python files**, including comments and
+blank lines, excluding demos, examples, tests, docs and tooling. It stays small through
 manual layout and a focused feature set.
 
 Widgets use absolute character coordinates; panels do not own their children.
@@ -155,5 +157,7 @@ python -m unittest discover -s tests -v
 ```
 
 Tests include native mouse/key/wheel records in a separate hidden Windows console,
-modal focus handling, rendering, cancellation and cleanup. They do not send input
+modal focus handling, Unicode output, style validation, timestamp handling,
+gesture cancellation and cleanup. They do not send input
 to your open terminal. Physical mouse forwarding still needs a check in your host.
+GitHub Actions runs the suite on Windows with Python 3.11 through 3.15.

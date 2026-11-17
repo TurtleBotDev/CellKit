@@ -99,6 +99,8 @@ class App:
             self.dialog.layout(self.width, self.height)
         if not self.available(self.focus):
             self.set_focus(None)
+        if self.capture is not None and not self.available(self.capture):
+            self.cancel_press()
         if event.kind == "key":
             if event.key == "tab":
                 choices = [w for w in self.input_widgets() if self.available(w)]
@@ -150,7 +152,7 @@ class App:
             if self.available(captured):
                 captured.mouse(event)
             # Releasing outside the pressed widget cancels the click.
-            if captured is not None and captured is target:
+            if captured is target and self.available(captured):
                 self.mouse_clicks += 1
                 captured.activate()
 
